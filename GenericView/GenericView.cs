@@ -17,7 +17,7 @@ namespace AprossUtils.GenericView
 
         public GenericViewPagination Pagination;
         public Expression<Func<TModel, bool>> Filters;
-        public Expression<Func<TModel, bool>> Searchs;
+        public List<string> Searchs;
 
         public List<TModel> Objects;
 
@@ -58,10 +58,8 @@ namespace AprossUtils.GenericView
 
         public void ProcessFilterForm<T>(T filterForm) where T : GenericViewFilterForm
         {
-
-
             Dictionary<string, object> filters = new Dictionary<string, object>();
-            Dictionary<string, object> searchs = new Dictionary<string, object>();
+            List<string> searchs = new List<string>();
             foreach (var prop in typeof(T).GetProperties())
             {
                 var attr = (GenericViewFilterAttribute)prop.GetCustomAttributes(typeof(GenericViewFilterAttribute), false).FirstOrDefault();
@@ -74,41 +72,16 @@ namespace AprossUtils.GenericView
                 var search_attrs = (GenericViewSearchAttribute[])prop.GetCustomAttributes(typeof(GenericViewSearchAttribute), false);
                 foreach (var a in search_attrs)
                 {
-
-
-
-                    searchs.Add(a.Pattern, prop.GetValue(filterForm).ToString());
-
-                    LambdaExpression e = DynamicExpressionParser.ParseLambda(
-                                                typeof(TModel),
-                                                typeof(string),
-                                                a.Pattern
-                                                );
-
-                    Expression<Func<TModel, string>> propertySelector = (Expression<Func<TModel, string>>)e;
-                    ParameterExpression parameterExpression = null;
-                    var memberExpression = LinqQueries.GetMemberExpression(propertySelector.Body, out parameterExpression);
-                    ConstantExpression constant = Expression.Constant(value.ToString());
-
-                    var dynamicExpression = Expression.Call(memberExpression, "IndexOf", null, Expression.Constant(value.ToString(), typeof(string)), Expression.Constant(StringComparison.InvariantCultureIgnoreCase));
-
-                    var exp  = Expression.GreaterThan(dynamicExpression, Expression.Constant(-1));
-
-                    Filters = Expression.Lambda<Func<TModel, bool>>(exp, new[] { parameterExpression });
-
-                    
-
+                    var words = value.ToString().Split(' ');
+                    foreach (var w in words)
+                    {
+                        if (!String.IsNullOrWhiteSpace(w)) searchs.Add(w.Trim());
+                    }
 
                 }
             }
-
-            //Filters = dynamicExpression;// ExpresssionBuilder<TModel>.FromDict(searchs);
-
-
-
-            //Searchs = ExpresssionBuilder<TModel>.FromDict(searchs);
-
-
+            Filters = ExpresssionBuilder<TModel>.FromDict(filters);
+            Searchs = searchs;
         }
     }
 
