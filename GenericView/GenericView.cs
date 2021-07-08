@@ -1,0 +1,181 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Collections.Specialized;
+using System.Linq;
+using System.Linq.Dynamic.Core;
+using System.Linq.Expressions;
+using System.Reflection;
+using System.Threading.Tasks;
+using System.Web;
+
+namespace AprossUtils.GenericView
+{
+    public abstract class GenericView<TModel> where TModel : new()
+    {
+        public const string PageString = "Page";
+        public const string PageSizeString = "PageSize";
+
+        public GenericViewPagination Pagination;
+        public Expression<Func<TModel, bool>> Filters;
+        public Expression<Func<TModel, bool>> Searchs;
+
+        public List<TModel> Objects;
+
+        public virtual string[] ListFields { get => new string[] { }; }
+        public virtual string[] FiterFields { get => new string[] { }; }
+        public virtual string[] SearchFields { get => new string[] { }; }
+        public abstract Task LoadObjects(Expression<Func<TModel, bool>> expression);
+        public NameValueCollection QueryString { get; set; }
+
+        public void ProcessRequest(HttpRequestBase request)
+        {
+            QueryString = request.QueryString;
+            if (Pagination is null) Pagination = new GenericViewPagination();
+            Pagination.QueryString = QueryString;
+            if (int.TryParse(request.QueryString.Get(PageSizeString), out int pageSize))
+            {
+                Pagination.PageSize = pageSize;
+            }
+            if (int.TryParse(request.QueryString.Get(PageString), out int actualPage))
+            {
+                Pagination.ActualPage = actualPage;
+            }
+            else
+            {
+                Pagination.ActualPage = 0;
+            }
+            NameValueCollection filters = new NameValueCollection();
+            foreach (var key in request.QueryString.AllKeys)
+            {
+                if (FiterFields.Any(x => x == key))
+                {
+                    filters.Add(key, request.QueryString[key]);
+                }
+            }
+            Filters = ExpresssionBuilder<TModel>.FromNameValueCollection(filters);
+
+        }
+
+        public void ProcessFilterForm<T>(T filterForm) where T : GenericViewFilterForm
+        {
+
+
+            Dictionary<string, object> filters = new Dictionary<string, object>();
+            Dictionary<string, object> searchs = new Dictionary<string, object>();
+            foreach (var prop in typeof(T).GetProperties())
+            {
+                var attr = (GenericViewFilterAttribute)prop.GetCustomAttributes(typeof(GenericViewFilterAttribute), false).FirstOrDefault();
+                var value = prop.GetValue(filterForm);
+                if (attr != null && value != null)
+                {
+                    filters.Add(attr.Pattern, prop.GetValue(filterForm));
+                }
+
+                var search_attrs = (GenericViewSearchAttribute[])prop.GetCustomAttributes(typeof(GenericViewSearchAttribute), false);
+                foreach (var a in search_attrs)
+                {
+
+
+
+                    searchs.Add(a.Pattern, prop.GetValue(filterForm).ToString());
+
+                    LambdaExpression e = DynamicExpressionParser.ParseLambda(
+                                                typeof(TModel),
+                                                typeof(string),
+                                                a.Pattern
+                                                );
+
+                    Expression<Func<TModel, string>> propertySelector = (Expression<Func<TModel, string>>)e;
+                    ParameterExpression parameterExpression = null;
+                    var memberExpression = LinqQueries.GetMemberExpression(propertySelector.Body, out parameterExpression);
+                    ConstantExpression constant = Expression.Constant(value.ToString());
+
+                    var dynamicExpression = Expression.Call(memberExpression, "IndexOf", null, Expression.Constant(value.ToString(), typeof(string)), Expression.Constant(StringComparison.InvariantCultureIgnoreCase));
+
+                    var exp  = Expression.GreaterThan(dynamicExpression, Expression.Constant(-1));
+
+                    Filters = Expression.Lambda<Func<TModel, bool>>(exp, new[] { parameterExpression });
+
+                    
+
+
+                }
+            }
+
+            //Filters = dynamicExpression;// ExpresssionBuilder<TModel>.FromDict(searchs);
+
+
+
+            //Searchs = ExpresssionBuilder<TModel>.FromDict(searchs);
+
+
+        }
+    }
+
+    public class GenericViewPagination
+    {
+        public NameValueCollection QueryString;
+        private int? _pageSize = 50;
+        public int? PageSize
+        {
+            get => _pageSize;
+            set { if (value > 0) _pageSize = value; }
+        }
+        private int _actualPage;
+        public int ActualPage
+        {
+            get => _actualPage;
+            set
+            {
+                if (value < 0) _actualPage = 0;
+                else _actualPage = value;
+            }
+        }
+        public long? RecordCount { get; set; }
+        public long PageCount
+        {
+            get
+            {
+                return LastPage + 1;
+            }
+        }
+        public int GetSkip()
+        {
+            if (PageSize is null || PageSize == 0) return 0;
+            return ActualPage * (int)PageSize;
+        }
+
+        public long FirstRecord { get => GetSkip() + 1; }
+        public long LastPage
+        {
+            get
+            {
+                if (PageSize is null || PageSize == 0 || RecordCount == null) return 0;
+                var rest = RecordCount % PageSize;
+                var d = Decimal.ToInt32((decimal)RecordCount / (int)PageSize);
+                if (rest == 0) return d - 1;
+                return d;
+            }
+        }
+
+        public long? LastRecord
+        {
+            get
+            {
+                if (PageSize == null) return RecordCount;
+                if (ActualPage == LastPage) return GetSkip() + (RecordCount % PageSize);
+                return GetSkip() + PageSize;
+            }
+        }
+
+        private NameValueCollection _qs;
+        public string BuildQueryString(long page)
+        {
+            if (_qs == null) _qs = new NameValueCollection(QueryString);
+            _qs[GenericView<object>.PageString] = page.ToString();
+            string q = String.Join("&",
+             _qs.AllKeys.Select(a => a + "=" + HttpUtility.UrlEncode(_qs[a])));
+            return q;
+        }
+    }
+}
