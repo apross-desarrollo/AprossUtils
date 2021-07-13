@@ -81,7 +81,6 @@
     <Compile Include="DoDiagnostic.cs" />
     <Compile Include="GenericView\GenericViewFilterAttribute.cs" />
     <Compile Include="GenericView\GenericView.cs" />
-    <Compile Include="GenericView\PaginationHelper.cs" />
     <Compile Include="GtagRepository.cs" />
     <Compile Include="HtmlHelpers\AutocompleteHelper.cs" />
     <Compile Include="HtmlHelpers\NestedFormHelper.cs" />
@@ -98,8 +97,6 @@
   <ItemGroup>
     <None Include="packages.config" />
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="GenericView\Views\" />
-  </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

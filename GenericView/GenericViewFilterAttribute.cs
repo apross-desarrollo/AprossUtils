@@ -46,7 +46,7 @@ namespace AprossUtils.GenericView
 
         // This constructor defines two required parameters: name and level.
 
-        public GenericViewSearchAttribute(string pattern)
+        public GenericViewSearchAttribute(string pattern=null)
         {
             this.pattern = pattern;
         }

@@ -10,7 +10,8 @@ using System.Web;
 
 namespace AprossUtils.GenericView
 {
-    public abstract class GenericView<TModel> where TModel : new()
+
+    public abstract class GenericView<TModel>
     {
         public const string PageString = "Page";
         public const string PageSizeString = "PageSize";
@@ -27,16 +28,17 @@ namespace AprossUtils.GenericView
         public abstract Task LoadObjects(Expression<Func<TModel, bool>> expression);
         public NameValueCollection QueryString { get; set; }
 
-        public void ProcessRequest(HttpRequestBase request)
+
+        public void ProcessRequest(NameValueCollection querystring)
         {
-            QueryString = request.QueryString;
+            QueryString = querystring;
             if (Pagination is null) Pagination = new GenericViewPagination();
             Pagination.QueryString = QueryString;
-            if (int.TryParse(request.QueryString.Get(PageSizeString), out int pageSize))
+            if (int.TryParse(QueryString.Get(PageSizeString), out int pageSize))
             {
                 Pagination.PageSize = pageSize;
             }
-            if (int.TryParse(request.QueryString.Get(PageString), out int actualPage))
+            if (int.TryParse(QueryString.Get(PageString), out int actualPage))
             {
                 Pagination.ActualPage = actualPage;
             }
@@ -45,15 +47,18 @@ namespace AprossUtils.GenericView
                 Pagination.ActualPage = 0;
             }
             NameValueCollection filters = new NameValueCollection();
-            foreach (var key in request.QueryString.AllKeys)
+            foreach (var key in QueryString.AllKeys)
             {
                 if (FiterFields.Any(x => x == key))
                 {
-                    filters.Add(key, request.QueryString[key]);
+                    filters.Add(key, QueryString[key]);
                 }
             }
             Filters = ExpresssionBuilder<TModel>.FromNameValueCollection(filters);
-
+        }
+        public void ProcessRequest(HttpRequestBase request)
+        {
+            ProcessRequest(request.QueryString);
         }
 
         public void ProcessFilterForm<T>(T filterForm) where T : GenericViewFilterForm
@@ -72,10 +77,15 @@ namespace AprossUtils.GenericView
                 var search_attrs = (GenericViewSearchAttribute[])prop.GetCustomAttributes(typeof(GenericViewSearchAttribute), false);
                 foreach (var a in search_attrs)
                 {
-                    var words = value.ToString().Split(' ');
-                    foreach (var w in words)
+
+                    if (value != null)
                     {
-                        if (!String.IsNullOrWhiteSpace(w)) searchs.Add(w.Trim());
+                        var words = value.ToString().Split(' ');
+
+                        foreach (var w in words)
+                        {
+                            if (!String.IsNullOrWhiteSpace(w)) searchs.Add(w.Trim());
+                        }
                     }
 
                 }
