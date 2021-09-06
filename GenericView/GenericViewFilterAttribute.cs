@@ -1,8 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace AprossUtils.GenericView
 {
@@ -18,7 +14,7 @@ namespace AprossUtils.GenericView
 
         // Private fields.
         private string pattern;
-      
+
 
         // This constructor defines two required parameters: name and level.
 
@@ -46,7 +42,7 @@ namespace AprossUtils.GenericView
 
         // This constructor defines two required parameters: name and level.
 
-        public GenericViewSearchAttribute(string pattern=null)
+        public GenericViewSearchAttribute(string pattern = null)
         {
             this.pattern = pattern;
         }

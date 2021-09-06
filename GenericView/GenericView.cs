@@ -4,7 +4,6 @@ using System.Collections.Specialized;
 using System.Linq;
 using System.Linq.Dynamic.Core;
 using System.Linq.Expressions;
-using System.Reflection;
 using System.Threading.Tasks;
 using System.Web;
 
@@ -26,6 +25,7 @@ namespace AprossUtils.GenericView
         public virtual string[] FiterFields { get => new string[] { }; }
         public virtual string[] SearchFields { get => new string[] { }; }
         public abstract Task LoadObjects(Expression<Func<TModel, bool>> expression);
+        public abstract Task LoadObjects(string query);
         public NameValueCollection QueryString { get; set; }
 
 
