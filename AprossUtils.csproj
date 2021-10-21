@@ -83,6 +83,7 @@
     <Compile Include="GenericView\GenericView.cs" />
     <Compile Include="GtagRepository.cs" />
     <Compile Include="HtmlHelpers\AutocompleteHelper.cs" />
+    <Compile Include="HtmlHelpers\FileTypeAttribute.cs" />
     <Compile Include="HtmlHelpers\NestedFormHelper.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="ExpresssionBuilder.cs" />
