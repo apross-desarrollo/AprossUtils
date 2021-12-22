@@ -15,11 +15,11 @@ namespace AprossUtils.CustomAttributes
                 {
                     res = Validators.CuiltValidate(cuit);
                 }
-                catch (ArgumentNullException e)
+                catch (ArgumentNullException)
                 {
                     res = true;
                 }
-                catch (Exception e)
+                catch (Exception)
                 {
                     res = false;
                 }
