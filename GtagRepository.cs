@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Web;
+using System.Web.Mvc;
 
 namespace AprossUtils.Gtag
 {
@@ -23,6 +24,11 @@ namespace AprossUtils.Gtag
             session["gtag_events"] = eventos;
         }
 
+        public static void SetException(GtagException exception, HttpSessionStateBase session)
+        {
+            session["gtag_exception"] = exception;
+        }
+
 
         public Gtag GetByUserId(string user_id, HttpSessionStateBase session)
         {
@@ -33,8 +39,12 @@ namespace AprossUtils.Gtag
             gtag.UserID = user_id;
             if (session["gtag_events"] != null)
                 gtag.Eventos = (List<GtagEvento>)session["gtag_events"];
-
+            if (session["gtag_exception"] != null)
+            {
+                gtag.Exception = (GtagException)session["gtag_exception"];
+            }
             return gtag;
+            
         }
 
     }
@@ -43,7 +53,14 @@ namespace AprossUtils.Gtag
     {
         public string Id { get; set; } //G-MDD37EPVF3
         public string UserID { get; set; }
-        public List<GtagEvento> Eventos { get; set; }
+        public List<GtagEvento> Eventos { get; set; } 
+        public GtagException Exception { get; set; }
+
+        public string GetExceptionString()
+        {
+            if (Exception!=null) return JsonConvert.SerializeObject(Exception);
+            return default;
+        }
     }
 
     public class GtagEvento
@@ -55,5 +72,16 @@ namespace AprossUtils.Gtag
         {
             return JsonConvert.SerializeObject(Data);
         }
+    }
+
+    public class GtagException
+    {
+        public string Description { get; set; }
+        public bool Fatal { get; set; }
+        public string UserId { get; set; }
+        public string ControllerName { get; set; }
+        public string Action { get; set; }
+        public HandleErrorInfo Exception { get; set; }
+        public string StackTrace { get; set; }
     }
 }
