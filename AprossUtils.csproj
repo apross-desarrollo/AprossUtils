@@ -91,6 +91,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="CustomAttributes\AuthorizeAttributes.cs" />
     <Compile Include="CustomAttributes\CuitValidator.cs" />
     <Compile Include="DoDiagnostic.cs" />
     <Compile Include="GenericView\GenericViewFilterAttribute.cs" />
