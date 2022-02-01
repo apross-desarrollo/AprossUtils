@@ -81,7 +81,5 @@ namespace AprossUtils.Gtag
         public string UserId { get; set; }
         public string ControllerName { get; set; }
         public string Action { get; set; }
-        public HandleErrorInfo Exception { get; set; }
-        public string StackTrace { get; set; }
     }
 }
