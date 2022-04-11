@@ -14,9 +14,11 @@ namespace AprossUtils.GenericView
     {
         public const string PageString = "Page";
         public const string PageSizeString = "PageSize";
+        public const string OrderString = "order";
 
         public GenericViewPagination Pagination;
         public Expression<Func<TModel, bool>> Filters;
+        public List<string> OrderBy;
         public List<string> Searchs;
 
         public List<TModel> Objects;
@@ -24,6 +26,7 @@ namespace AprossUtils.GenericView
         public virtual string[] ListFields { get => new string[] { }; }
         public virtual string[] FiterFields { get => new string[] { }; }
         public virtual string[] SearchFields { get => new string[] { }; }
+        public virtual string[] OrderFields { get => new string[] { }; }
         public abstract Task LoadObjects(Expression<Func<TModel, bool>> expression);
         public abstract Task LoadObjects(string query);
         public NameValueCollection QueryString { get; set; }
@@ -31,6 +34,7 @@ namespace AprossUtils.GenericView
 
         public void ProcessRequest(NameValueCollection querystring)
         {
+
             QueryString = querystring;
             if (Pagination is null) Pagination = new GenericViewPagination();
             Pagination.QueryString = QueryString;
@@ -46,6 +50,13 @@ namespace AprossUtils.GenericView
             {
                 Pagination.ActualPage = 0;
             }
+            string order = QueryString.Get(OrderString);
+            OrderBy = new List<string>();
+            if (!string.IsNullOrEmpty(order))
+            {
+                OrderBy.Add(order);
+            }
+
             NameValueCollection filters = new NameValueCollection();
             foreach (var key in QueryString.AllKeys)
             {
@@ -63,6 +74,7 @@ namespace AprossUtils.GenericView
 
         public void ProcessFilterForm<T>(T filterForm) where T : GenericViewFilterForm
         {
+
             Dictionary<string, object> filters = new Dictionary<string, object>();
             List<string> searchs = new List<string>();
             foreach (var prop in typeof(T).GetProperties())
@@ -92,6 +104,7 @@ namespace AprossUtils.GenericView
             }
             Filters = ExpresssionBuilder<TModel>.FromDict(filters);
             Searchs = searchs;
+            filterForm.PostProcess();
         }
     }
 

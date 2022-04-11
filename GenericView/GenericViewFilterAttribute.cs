@@ -5,7 +5,15 @@ namespace AprossUtils.GenericView
 
     public class GenericViewFilterForm
     {
+        public virtual void PreProcess()
+        {
+            return;
+        }
 
+        public virtual void PostProcess()
+        {
+            return;
+        }
     }
 
     [AttributeUsage(AttributeTargets.Property)]
