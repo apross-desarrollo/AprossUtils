@@ -51,7 +51,7 @@ namespace AprossUtils.GenericView
                 Pagination.ActualPage = 0;
             }
             string order = QueryString.Get(OrderString);
-            OrderBy = new List<string>();
+            if (OrderBy is null) OrderBy = new List<string>();
             if (!string.IsNullOrEmpty(order))
             {
                 OrderBy.Add(order);
