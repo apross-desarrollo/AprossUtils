@@ -12,6 +12,16 @@ namespace AprossUtils
             if (birth.Date > today.AddYears(-age)) age--;
             return age;
         }
+
+        public static DateTime? ToLocalDate(DateTime? dt)
+        {
+            if (dt == null) return null;
+            return DateTime.SpecifyKind((DateTime)dt, DateTimeKind.Local);
+        }
+        public static DateTime ToLocalDate(DateTime dt)
+        {
+            return DateTime.SpecifyKind((DateTime)dt, DateTimeKind.Local);
+        }
     }
 
     public class Encrypt
