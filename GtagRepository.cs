@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Web;
-using System.Web.Mvc;
 
 namespace AprossUtils.Gtag
 {
@@ -44,7 +43,7 @@ namespace AprossUtils.Gtag
                 gtag.Exception = (GtagException)session["gtag_exception"];
             }
             return gtag;
-            
+
         }
 
     }
@@ -53,12 +52,12 @@ namespace AprossUtils.Gtag
     {
         public string Id { get; set; } //G-MDD37EPVF3
         public string UserID { get; set; }
-        public List<GtagEvento> Eventos { get; set; } 
+        public List<GtagEvento> Eventos { get; set; }
         public GtagException Exception { get; set; }
 
         public string GetExceptionString()
         {
-            if (Exception!=null) return JsonConvert.SerializeObject(Exception);
+            if (Exception != null) return JsonConvert.SerializeObject(Exception);
             return default;
         }
     }
