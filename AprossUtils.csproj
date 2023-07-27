@@ -110,6 +110,7 @@
     <Content Include="Dynamic Expressions.html" />
     <Content Include="Scripts\AutocompleteHelper.js" />
     <Content Include="Scripts\NestedFormHelper.js" />
+    <Content Include="Scripts\OverrideValidaror.js" />
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />
