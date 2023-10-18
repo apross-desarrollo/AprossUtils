@@ -54,7 +54,15 @@ namespace AprossUtils.GenericView
             if (OrderBy is null) OrderBy = new List<string>();
             if (!string.IsNullOrEmpty(order))
             {
-                OrderBy.Add(order);
+                var fields = order.Split(',').Select(x => x.Replace("-", "").Replace("+", ""));
+                if (fields.All(x => OrderFields.Contains(x.ToLower(), StringComparer.OrdinalIgnoreCase)))
+                {
+                    OrderBy.Insert(0, order);
+                }
+                else
+                {
+                    throw new Exception("Invalid Order Field");
+                }
             }
 
             NameValueCollection filters = new NameValueCollection();
@@ -77,6 +85,7 @@ namespace AprossUtils.GenericView
 
             Dictionary<string, object> filters = new Dictionary<string, object>();
             List<string> searchs = new List<string>();
+            List<Tuple<int, string>> orderBy = new List<Tuple<int, string>>();
             foreach (var prop in typeof(T).GetProperties())
             {
                 var attr = (GenericViewFilterAttribute)prop.GetCustomAttributes(typeof(GenericViewFilterAttribute), false).FirstOrDefault();
@@ -101,9 +110,33 @@ namespace AprossUtils.GenericView
                     }
 
                 }
+
+                var order_attrs = (GenericViewOrderAttribute[])prop.GetCustomAttributes(typeof(GenericViewOrderAttribute), false);
+                foreach (var o in order_attrs)
+                {
+                    if (value != null)
+                    {
+                        int intVal = int.Parse(value.ToString());
+                        string[] fields = o.Pattern.Split(',');
+                        char[] p = (intVal > 0)
+                            ? fields.Select(x => x.StartsWith("-") ? '-' : '+').ToArray()
+                            : fields.Select(x => x.StartsWith("-") ? '+' : '-').ToArray();
+                        fields = fields.Select(x => x.TrimStart('-', '+')).ToArray();
+                        for (int i = 0; i < fields.Length; i++)
+                        {
+                            orderBy.Add(new Tuple<int, string>(intVal, p[i] + fields[i]));
+   
+                        }
+                    }
+                }
+
+
             }
             Filters = ExpresssionBuilder<TModel>.FromDict(filters);
             Searchs = searchs;
+            if (OrderBy != null && OrderBy.Count > 0) OrderBy = orderBy.OrderBy(x => x.Item1).Select(x => x.Item2).Concat(OrderBy).ToList();
+            else OrderBy = orderBy.OrderBy(x => x.Item1).Select(x => x.Item2).ToList();
+
             filterForm.PostProcess();
         }
     }

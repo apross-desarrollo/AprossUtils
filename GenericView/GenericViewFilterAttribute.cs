@@ -1,4 +1,7 @@
 ﻿using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.Web.Mvc;
 
 namespace AprossUtils.GenericView
 {
@@ -51,6 +54,30 @@ namespace AprossUtils.GenericView
         // This constructor defines two required parameters: name and level.
 
         public GenericViewSearchAttribute(string pattern = null)
+        {
+            this.pattern = pattern;
+        }
+
+        // Define Name property.
+        // This is a read-only attribute.
+
+        public virtual string Pattern
+        {
+            get { return pattern; }
+        }
+    }
+
+    [AttributeUsage(AttributeTargets.Property)]
+    public class GenericViewOrderAttribute : Attribute
+    {
+
+        // Private fields.
+        private string pattern;
+
+
+        // This constructor defines two required parameters: name and level.
+
+        public GenericViewOrderAttribute(string pattern)
         {
             this.pattern = pattern;
         }
