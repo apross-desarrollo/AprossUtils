@@ -21,7 +21,7 @@ namespace AprossUtils.GenericView
         public List<string> OrderBy;
         public List<string> Searchs;
 
-        public List<TModel> Objects;
+        public IEnumerable<TModel> Objects;
 
         public virtual string[] ListFields { get => new string[] { }; }
         public virtual string[] FiterFields { get => new string[] { }; }
